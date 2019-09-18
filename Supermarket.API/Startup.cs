@@ -17,6 +17,9 @@ using Supermarket.API.Persistence.Contexts;
 using Supermarket.API.Persistence.Repositories;
 using AutoMapper;
 using Supermarket.API.Services;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
 
 namespace Supermarket.API
 {
@@ -42,11 +45,47 @@ namespace Supermarket.API
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Supermarket API",
+                    Version = "v1",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Stéphane"
+                    }
+                });
+
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
+
+            //services.AddSwaggerGen(swagger =>
+            //{
+            //    //swagger.DescribeAllEnumsAsStrings();
+            //    //swagger.DescribeAllParametersInCamelCase();
+            //    swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Supermarket API", Version = "v1" });
+            //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseStaticFiles();
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.RoutePrefix = string.Empty;
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Supermarket API v1");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

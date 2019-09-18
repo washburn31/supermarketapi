@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Supermarket.API.Controllers
 {
     [Route("api/[controller]")]
-    public class CategoriesController : Controller
+    public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
         private readonly IMapper _mapper;
@@ -20,6 +20,13 @@ namespace Supermarket.API.Controllers
             this._mapper = mapper;
         }
 
+        /// <summary>
+        /// Gets all categories.
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="200">Categories returned</response>
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<CategoryResource>), 200)]
         public async Task<IEnumerable<CategoryResource>> ListAsync()
         {
             var categories = await this._categoryService.ListAsync();
