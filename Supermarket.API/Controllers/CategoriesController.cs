@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Supermarket.API.Domain.Models;
 using Supermarket.API.Domain.Services;
+using Supermarket.API.Extensions;
 using Supermarket.API.Resources;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -30,8 +31,28 @@ namespace Supermarket.API.Controllers
         public async Task<IEnumerable<CategoryResource>> ListAsync()
         {
             var categories = await this._categoryService.ListAsync();
-            var resources = _mapper.Map<IEnumerable<Category>, IEnumerable<CategoryResource>>(categories);
+            var resources = this._mapper.Map<IEnumerable<Category>, IEnumerable<CategoryResource>>(categories);
             return resources;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PostAsync([FromBody] SaveCategoryResource resource)
+        {
+            if (!this.ModelState.IsValid)
+            {
+                return this.BadRequest(this.ModelState.GetErrorMessages());
+            }
+
+            var category = this._mapper.Map<SaveCategoryResource, Category>(resource);
+            var result = await this._categoryService.SaveAsync(category);
+
+            if (!result.Success)
+            {
+                return this.BadRequest(result.Message);
+            }
+
+            var categoryResource = this._mapper.Map<Category, CategoryResource>(result.Category);
+            return this.Ok(categoryResource);
         }
     }
 }
